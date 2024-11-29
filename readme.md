@@ -14,6 +14,12 @@ Serve resourses with any web server you like.
 You need [Node.js](https://nodejs.org/).
 
 ```sh
-npm exec -- serve resources
+npm start
+```
+
+## Test
+
+```sh
+npm test
 ```
 
