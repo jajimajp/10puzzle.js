@@ -8,7 +8,6 @@
 function InvalidInputError(position, length) {
   this.position = position;
   this.length = length;
-  return this;
 }
 
 /** Valid characters as input */
