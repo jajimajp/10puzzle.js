@@ -3,17 +3,12 @@ import { tokenize } from './lexer.js';
 import { ErrorI18n } from './errors.js';
 import { Problem, NotEvaluateTo10Error } from './problem.js';
 
-const root = document.querySelector('#root');
-root.innerHTML = `
-<div id="problem"></div>
-<div id="status"></div>
-<input type="text" id="textinput" />
-<input type="button" id="button" value="Check" />
-`;
+
 const problemElem = document.querySelector('#problem');
 const status = document.querySelector('#status');
-const textinput = document.querySelector('#textinput');
-const button = document.querySelector('#button');
+const answer = document.querySelector('#answer');
+const button = document.querySelector('#checkButton');
+
 
 /** @param {string} statusText */
 const renderStatus = (statusText) => {
@@ -21,12 +16,18 @@ const renderStatus = (statusText) => {
 };
 
 const url = new URL(document.location.href);
+console.log('pathname', url.pathname);
+const isJapanese = url.pathname.endsWith('ja');
 const problem = Problem.fromURL(url);
 
-problemElem.innerHTML = `<p>${problem.toStringJa()}</p>`;
+if (isJapanese) {
+  problemElem.innerHTML = `<p>${problem.toStringJa()}</p>`;
+} else {
+  problemElem.innerHTML = `<p>${problem.toString()}</p>`;
+}
 
 button.addEventListener('click', () => {
-  check(textinput.value);
+  check(answer.value);
 });
 
 /** @param {string} input */
@@ -43,7 +44,10 @@ const check = (input) => {
     problem.verify(ast);
 
     // Success
-    const elem = `<span>${mathML} 💮</span>`
+    const elem = isJapanese
+      ? `<span>${mathML} 💮</span>`
+      : `<span>${mathML} 👏</span>`
+
 
     renderStatus(elem);
   } catch(e) {
@@ -54,9 +58,11 @@ const check = (input) => {
       const inputMathML = concatStringGen(tokensToMathMLs(tokenize(input)));
       const resultMathML = result.toMathML();
       const mathML = `<math>${inputMathML}<mo>=</mo>${resultMathML}</math>`;
-      renderStatus(`${e.messageJa}: ${mathML}`);
+      const msg = isJapanese ? e.messageJa : e.message;
+      renderStatus(`${msg}: ${mathML}`);
     } else if (e instanceof ErrorI18n) {
-      renderStatus(e.messageJa);
+      const msg = isJapanese ? e.messageJa : e.message;
+      renderStatus(msg);
     } else {
       console.error(e);
     }
