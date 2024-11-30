@@ -1,13 +1,18 @@
 /** The tokenizer. Because all the token in this app is a character,
  *  we do not assign symbol for tokens; just use character as is. */
 
+import { ErrorI18n } from './errors.js';
+
 /**
  * @params {number} position
- * @params {number} length
+ * @params {string} character
  */
-function InvalidInputError(position, length) {
-  this.position = position;
-  this.length = length;
+class InvalidInputError extends ErrorI18n {
+  constructor(position, character) {
+    const msgEn = `Invalid character ${character} at position ${position}`;
+    const msgJa = `位置 ${position} で，使えない文字 ${character} が与えられました`;
+    super(msgEn, msgJa);
+  }
 }
 
 /** Valid characters as input */
@@ -33,7 +38,7 @@ export function* tokenize(s) {
   let i = 0;
   for (const c of s) {
     if (!isOfValidCharacters(c)) {
-      throw new InvalidInputError(i, 1);
+      throw new InvalidInputError(i, c);
     }
     if (tokenCharacters.includes(c)) {
       yield c;

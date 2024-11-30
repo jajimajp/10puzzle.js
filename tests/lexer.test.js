@@ -22,4 +22,12 @@ describe('tokenize', () => {
     expect(gen.next()).toEqual({ value: '2', done: false });
     expect(gen.next()).toEqual({ value: undefined, done: true });
   });
+
+  it('tokenizes number as is', () => {
+    const gen = tokenize('100');
+    expect(gen.next()).toEqual({ value: '1', done: false });
+    expect(gen.next()).toEqual({ value: '0', done: false });
+    expect(gen.next()).toEqual({ value: '0', done: false });
+    expect(gen.next()).toEqual({ value: undefined, done: true });
+  });
 });

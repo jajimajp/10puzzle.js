@@ -40,8 +40,32 @@
 // | <digit>
 
 import { digit, plus, minus, mult, div } from './ast.js';
+import { ErrorI18n } from './errors.js';
 
-export class ParseError extends Error {}
+class ParseError extends ErrorI18n {}
+
+class UnexpectedTokenError extends ParseError {
+  constructor(got, expected = undefined, expectedJa = undefined) {
+    if (expected === undefined) {
+      const msgEn = `Got ${got} at unexpected position`;
+      const msgJa = `想定外の箇所に${got}があります`;
+      super(msgEn, msgJa);
+    } else {
+      let exJa = expectedJa === undefined ? expected : expectedJa;
+      const msgEn = `${expected} expected, but got ${got}`;
+      const msgJa = `${exJa}があるべき箇所に${got}があります`;
+      super(msgEn, msgJa);
+    }
+  }
+}
+
+class UnexpectedEOIError extends ParseError {
+  constructor() {
+    const msgEn = 'Unexpected end of input';
+    const msgJa = '予期しない位置で入力が終わっています';
+    super(msgEn, msgJa);
+  }
+}
 
 /**
  * @param {Generator} gen
@@ -74,7 +98,16 @@ export function Parser(tokenGenerator) {
 
 Parser.prototype.parse = function() {
   // <term> ::= <pexpr0>
-  return this.pexpr0();
+  const e = this.pexpr0();
+
+  const { value, done } = this.tokGen.peek();
+  if (!done) {
+    throw new ErrorI18n(
+      `Got ${value} at the position that end of input expected`,
+      `入力が終わっているはずの箇所に ${value} があります`
+    );
+  }
+  return e;
 };
 
 Parser.prototype.pexpr0 = function() {
@@ -140,26 +173,32 @@ Parser.prototype.aexpr = function() {
 
   const { value, done } = this.tokGen.peek();
   if (done) {
-    throw new ParseError("Unexpected end of input: Expeced <aexpr>");
+    throw new UnexpectedEOIError();
   }
   if (value === "(") {
     this.tokGen.pop();
     const e = this.pexpr0();
     if (this.tokGen.peek().done) {
-      throw new ParseError(`Unexpected end of input: Expected ")"`);
+      throw new UnexpectedEOIError();
     }
     const next = this.tokGen.peek();
     this.tokGen.pop();
     if (next.value !== ")") {
-      throw new ParseError(`")" expected but got ${next.value}`);
+      throw new UnexpectedTokenError(next.value, ")");
     }
     return e;
   }
   if ("0123456789".includes(value)) {
     this.tokGen.pop();
+    
+    // Check for decent error message
+    if ("0123456789".includes(this.tokGen.peek().value)) {
+      throw new ErrorI18n('You cannot concat digits', '数字を連結することはできません');
+    }
+
     return digit(Number(value));
   } else {
-    throw new ParseError(`DIGIT expected but got ${value}`);
+    throw new UnexpectedTokenError(value, "digit", "数字");
   }
 };
 

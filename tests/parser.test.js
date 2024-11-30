@@ -15,3 +15,9 @@ test('', () => {
   p.parse();
 });
 
+test('', () => {
+  const input = "100"
+  const p = new Parser(simpleTokGen(input));
+  expect(() => { p.parse() }).toThrow();
+});
+
