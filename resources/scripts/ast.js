@@ -1,5 +1,7 @@
 /** The AST.
- * Each AST has `eval: () => RationalNumber`. */
+ * Each AST has:
+ * - `eval: () => RationalNumber`
+ * - `ints: () => number[]`. */
 
 import { ErrorI18n } from './errors.js';
 import { RationalNumber } from './rationalNumber.js';
@@ -20,30 +22,35 @@ export const digit = (d) => {
   }
   return {
     eval: () => new RationalNumber(d),
+    ints: () => [d],
   };
 };
 
 export const plus = (l, r) => {
   return {
     eval: () => RationalNumber.add(l.eval(), r.eval()),
+    ints: () => l.ints().concat(r.ints()),
   }
 };
 
 export const minus = (l, r) => {
   return {
     eval: () => RationalNumber.sub(l.eval(), r.eval()),
+    ints: () => l.ints().concat(r.ints()),
   }
 };
 
 export const mult = (l, r) => {
   return {
     eval: () => RationalNumber.mult(l.eval(), r.eval()),
+    ints: () => l.ints().concat(r.ints()),
   }
 };
 
 export const div = (l, r) => {
   return {
     eval: () => RationalNumber.div(l.eval(), r.eval()),
+    ints: () => l.ints().concat(r.ints()),
   }
 };
 
